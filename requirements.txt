@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pytesseract
+Pillow
+indic-transliteration
+python-multipart
+SQLAlchemy
+
