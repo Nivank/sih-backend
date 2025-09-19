@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 fastapi>=0.111.0
 uvicorn[standard]>=0.30.0
 SQLAlchemy>=2.0.30
@@ -8,3 +9,13 @@ indic-transliteration>=2.3.75
 bcrypt>=4.1.3
 python-jose[cryptography]>=3.3.0
 pydantic>=2.7.4
+=======
+fastapi
+uvicorn
+pytesseract
+Pillow
+indic-transliteration
+python-multipart
+SQLAlchemy
+
+>>>>>>> 2bf4bd62af1039d142c8e491bf8c3cbff80d61d4

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from __future__ import annotations
 
 import os
@@ -36,3 +37,20 @@ def root():
 app.include_router(auth_router)
 app.include_router(translit_router)
 app.include_router(notes_router)
+=======
+from fastapi import FastAPI
+from api import auth, ocr, notes, tourism, milestones
+
+app = FastAPI(title="Bharat Transliteration App API")
+
+# Register routers
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+app.include_router(ocr.router, prefix="/transliterate", tags=["OCR/Transliteration"])
+app.include_router(notes.router, prefix="/notes", tags=["Notes"])
+app.include_router(tourism.router, prefix="/tourist", tags=["Tourism"])
+app.include_router(milestones.router, prefix="/milestones", tags=["Milestones"])
+
+@app.get("/")
+def root():
+    return {"message": "Bharat Transliteration API is running 🚀"}
+>>>>>>> 2bf4bd62af1039d142c8e491bf8c3cbff80d61d4
