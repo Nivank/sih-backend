@@ -1,0 +1,205 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>🔧 Bharat Transliteration (Static)</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <style>
+      body { font-family: system-ui, Arial, sans-serif; margin: 0; padding: 0; }
+      header { background: #3f51b5; color: #fff; padding: 12px 16px; }
+      main { padding: 16px; }
+      .row { display: flex; gap: 16px; flex-wrap: wrap; }
+      .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; flex: 1 1 320px; }
+      #map { width: 100%; height: 360px; }
+      label { display:block; margin-top:8px; }
+      input, select, textarea, button { margin-top:4px; }
+      .muted { color: #666; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h3 style="margin:0">🔧 Bharat Transliteration (Static Web)</h3>
+    </header>
+    <main>
+      <div class="row">
+        <div class="card">
+          <h4>🔧 Login</h4>
+          <label>Email <input id="email" type="email" placeholder="email" /></label>
+          <label>Password <input id="password" type="password" placeholder="password" /></label>
+          <button id="loginBtn">Login</button>
+          <button id="logoutBtn">Logout</button>
+          <div class="muted" id="authStatus">Logged out</div>
+        </div>
+
+        <div class="card">
+          <h4>🔧 Transliterate Text</h4>
+          <label>Source Text <textarea id="srcText" rows="3"></textarea></label>
+          <label>Target Script
+            <select id="targetScript">
+              <option>Devanagari</option>
+              <option>Telugu</option>
+              <option>Tamil</option>
+              <option>Malayalam</option>
+              <option>Gurmukhi</option>
+            </select>
+          </label>
+          <button id="translitTextBtn">Transliterate</button>
+          <pre id="translitOut"></pre>
+        </div>
+
+        <div class="card">
+          <h4>🔧 Transliterate Image</h4>
+          <input type="file" id="imgInput" accept="image/*" />
+          <button id="translitImgBtn">Upload and Transliterate</button>
+          <pre id="translitImgOut"></pre>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="card">
+          <h4>🔧 Notes</h4>
+          <label>Note <input id="noteText" placeholder="note" /></label>
+          <button id="saveNoteBtn">Save with current location</button>
+          <button id="refreshNotesBtn">Refresh</button>
+          <ul id="notesList"></ul>
+        </div>
+
+        <div class="card" style="min-width: 420px;">
+          <h4>🔧 Map</h4>
+          <div id="map"></div>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+      // 🔧 EDITABLE CONFIG
+      const API_BASE_URL = 'http://localhost:8000';
+      const USE_NGROK = false;
+      const NGROK_URL = '';
+      const BASE = (USE_NGROK && NGROK_URL) ? NGROK_URL : API_BASE_URL;
+
+      function authHeader() {
+        const t = localStorage.getItem('jwt');
+        return t ? { 'Authorization': 'Bearer ' + t } : {};
+      }
+
+      const el = (id) => document.getElementById(id);
+      const email = el('email');
+      const password = el('password');
+      const authStatus = el('authStatus');
+      const loginBtn = el('loginBtn');
+      const logoutBtn = el('logoutBtn');
+
+      function setAuthStatus() {
+        const t = localStorage.getItem('jwt');
+        authStatus.textContent = t ? 'Logged in' : 'Logged out';
+      }
+      setAuthStatus();
+
+      loginBtn.onclick = async () => {
+        const form = new URLSearchParams();
+        form.append('username', email.value);
+        form.append('password', password.value);
+        const r = await fetch(`${BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: form,
+        });
+        if (r.ok) {
+          const j = await r.json();
+          if (j.access_token) localStorage.setItem('jwt', j.access_token);
+          setAuthStatus();
+        } else {
+          alert('Login failed');
+        }
+      };
+      logoutBtn.onclick = () => { localStorage.removeItem('jwt'); setAuthStatus(); };
+
+      // Transliterate text
+      el('translitTextBtn').onclick = async () => {
+        const payload = {
+          source_text: el('srcText').value,
+          source_script: 'Devanagari',
+          target_script: el('targetScript').value,
+        };
+        const r = await fetch(`${BASE}/transliterate/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        el('translitOut').textContent = r.ok ? JSON.stringify(await r.json(), null, 2) : 'Error';
+      };
+
+      // Transliterate image
+      el('translitImgBtn').onclick = async () => {
+        const file = el('imgInput').files[0];
+        if (!file) { alert('Pick an image'); return; }
+        const form = new FormData();
+        form.append('file', file);
+        form.append('target_script', el('targetScript').value);
+        form.append('source_script', 'Devanagari');
+        const r = await fetch(`${BASE}/transliterate/image`, { method: 'POST', body: form });
+        el('translitImgOut').textContent = r.ok ? JSON.stringify(await r.json(), null, 2) : 'Error';
+      };
+
+      // Notes
+      async function refreshNotes() {
+        const r = await fetch(`${BASE}/notes/`, { headers: { ...authHeader() } });
+        if (!r.ok) { alert('Fetch notes failed'); return; }
+        const list = await r.json();
+        const ul = el('notesList');
+        ul.innerHTML = '';
+        list.forEach(n => {
+          const li = document.createElement('li');
+          li.textContent = `${n.text} (${n.latitude}, ${n.longitude})`;
+          ul.appendChild(li);
+        });
+        plotMarkers(list);
+      }
+      el('refreshNotesBtn').onclick = refreshNotes;
+      el('saveNoteBtn').onclick = () => {
+        if (!navigator.geolocation) { alert('Geolocation not supported'); return; }
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+          const payload = {
+            text: el('noteText').value,
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          };
+          const r = await fetch(`${BASE}/notes/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...authHeader() },
+            body: JSON.stringify(payload),
+          });
+          if (r.ok) { el('noteText').value=''; refreshNotes(); }
+          else alert('Failed to add note');
+        });
+      };
+
+      // Map
+      const map = L.map('map').setView([20.5937, 78.9629], 4.7);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      let markerGroup = L.layerGroup().addTo(map);
+      function plotMarkers(list) {
+        markerGroup.clearLayers();
+        list.forEach(n => {
+          if (typeof n.latitude === 'number' && typeof n.longitude === 'number') {
+            L.marker([n.latitude, n.longitude]).addTo(markerGroup).bindPopup(n.text || 'Note');
+          }
+        });
+      }
+
+      // auto refresh on load
+      refreshNotes();
+    </script>
+  </body>
+  </html>

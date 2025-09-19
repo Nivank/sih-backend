@@ -1,0 +1,13 @@
+{
+  "name": "bharat-translit-web",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "serve": "http-server ./build/web -p 5173 -c-1",
+    "serve:static": "http-server ./static -p 5173 -c-1",
+    "tunnel": "ngrok http 5173"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
