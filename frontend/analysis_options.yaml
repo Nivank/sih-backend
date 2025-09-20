@@ -1,0 +1,33 @@
+include: package:flutter_lints/flutter.yaml
+
+# 🔧 EDITABLE: Additional lint rules for better code quality
+linter:
+  rules:
+    # Error rules
+    avoid_empty_else: true
+    avoid_slow_async_io: true
+    cancel_subscriptions: true
+    close_sinks: true
+    
+    # Style rules  
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_final_fields: true
+    prefer_final_locals: true
+    use_super_parameters: true
+    
+    # Documentation
+    public_member_api_docs: false # Set to true if you want to enforce documentation
+    
+    # Import rules
+    directives_ordering: true
+    prefer_relative_imports: true
+    
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+  errors:
+    # Make certain warnings into errors
+    missing_required_param: error
+    missing_return: error

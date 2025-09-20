@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../state/auth_state.dart';
+import '../utils/config.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,28 +27,67 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
+    
+    print('Attempting login with email: ${_emailController.text.trim()}');
+    
     final ok = await context.read<AuthState>().login(
           _emailController.text.trim(),
           _passwordController.text,
         );
     setState(() => _loading = false);
-    if (!ok && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login failed')),
-      );
+    
+    if (ok) {
+      print('Login successful');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login successful!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } else {
+      print('Login failed');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(UiConstants.loginFailedMessage)),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isAuthed = context.watch<AuthState>().isAuthenticated;
+    final authState = context.watch<AuthState>();
+    final isAuthed = authState.isAuthenticated;
+    
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('🔧 EDITABLE: Login', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const Text('🔧 EDITABLE: ${UiConstants.loginTitle}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
+          
+          // Debug info section
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Debug Info:', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('API Base URL: ${AppConfig.apiBaseUrl}'),
+                Text('Authenticated: $isAuthed'),
+                Text('Token: ${authState.token != null ? '${authState.token!.substring(0, 20)}...' : 'None'}'),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          
           if (isAuthed)
             Row(
               children: [
@@ -57,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Spacer(),
                 TextButton(
                   onPressed: () => context.read<AuthState>().logout(),
-                  child: const Text('Logout'),
+                  child: const Text(UiConstants.logoutButtonLabel),
                 )
               ],
             ),
@@ -79,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: _loading ? null : _submit,
-                  child: _loading ? const CircularProgressIndicator() : const Text('Login'),
+                  child: _loading ? const CircularProgressIndicator() : const Text(UiConstants.loginButtonLabel),
                 ),
               ],
             ),

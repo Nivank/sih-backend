@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from __future__ import annotations
 
 from datetime import timedelta
@@ -34,28 +33,8 @@ def register_user(payload: UserCreate, db: Session = Depends(get_db)):
 @router.post("/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == form_data.username).first()
-    if not user or not verify_password(form_data.password, user.password_hash):
+    if not user or not verify_password(form_data.password, str(user.password_hash)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
 
     token = create_access_token({"sub": str(user.id)}, expires_delta=timedelta(minutes=60))
     return Token(access_token=token)
-=======
-from fastapi import APIRouter
-from pydantic import BaseModel
-
-router = APIRouter()
-
-class UserAuth(BaseModel):
-    email: str
-    password: str
-
-@router.post("/register")
-def register(user: UserAuth):
-    # TODO: Save user in DB
-    return {"status": "success", "message": "User registered"}
-
-@router.post("/login")
-def login(user: UserAuth):
-    # TODO: Validate user & return JWT token
-    return {"status": "success", "token": "dummy_jwt_token"}
->>>>>>> 2bf4bd62af1039d142c8e491bf8c3cbff80d61d4

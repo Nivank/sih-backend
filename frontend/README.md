@@ -1,49 +1,171 @@
-# Bharat Transliteration App — Flutter Frontend (Web + Android)
+# Bharat Transliteration - Flutter Frontend
 
-## 🔧 Editable UI constants
-- Update `lib/utils/config.dart` → `UiConstants.appName`, `UiConstants.supportedScripts`.
-- API base URL in `assets/env` (`API_BASE_URL`, optional `USE_NGROK`, `NGROK_URL`).
+[![Flutter](https://img.shields.io/badge/Flutter-3.0+-blue.svg)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.0+-blue.svg)](https://dart.dev)
 
-## Requirements
-- Flutter SDK installed and on PATH
-- For web: Chrome
-- For Android: Android SDK/emulator
+Cross-platform Flutter application for the Bharat Transliteration API, supporting both web and mobile platforms.
 
-## Install deps
-```bash
-flutter pub get
-```
+## Features
 
-## Run (backend must be running on the same machine)
-```bash
-# Web
-flutter run -d chrome
+- **🔐 Authentication**: Secure JWT-based login with token storage
+- **📝 Text Transliteration**: Convert text between multiple Indic scripts
+- **📷 Image OCR**: Extract and transliterate text from images
+- **📍 Location Notes**: Create and view location-tagged notes
+- **🗺️ Map Integration**: Interactive map with Google Maps
+- **🌐 Cross-Platform**: Works on web browsers and mobile devices
 
-# Android
-flutter run -d emulator-5554
-```
+## Quick Start
 
-## Environment
-`assets/env` example:
+### Prerequisites
+- Flutter 3.0+
+- Dart 3.0+
+- Backend API running on `http://localhost:8000`
+
+### Installation
+
+1. **Install dependencies**
+   ```bash
+   flutter pub get
+   ```
+
+2. **Configure environment**
+   - Edit `assets/env` to set API endpoint
+   - Default configuration points to `http://localhost:8000`
+
+3. **Run the application**
+   ```bash
+   # Web browser
+   flutter run -d chrome
+   
+   # Android device/emulator
+   flutter run -d android
+   
+   # iOS device/simulator (macOS only)
+   flutter run -d ios
+   ```
+
+## Configuration
+
+### Environment Settings (`assets/env`)
+
 ```
 API_BASE_URL=http://localhost:8000
 USE_NGROK=false
 NGROK_URL=
 ```
 
-## Android setup
-- Add Internet permission (already provided by Flutter).
-- Location permissions are requested at runtime via `geolocator`.
-- Google Maps SDK: add your API key in `android/app/src/main/AndroidManifest.xml`:
-```xml
-<meta-data android:name="com.google.android.geo.API_KEY" android:value="YOUR_KEY_HERE"/>
+### Test Credentials
+
+- **User 1**: Email: `nivank`, Password: `nivank`
+- **User 2**: Email: `nivank2`, Password: `nivank2`
+
+## Application Structure
+
+```
+lib/
+├── main.dart              # Application entry point
+├── screens/               # UI screens
+│   ├── login_screen.dart      # Authentication
+│   ├── transliteration_screen.dart  # Text conversion
+│   ├── notes_screen.dart      # Notes management
+│   └── map_screen.dart        # Map view
+├── services/              # API and external services
+│   └── api_client.dart        # HTTP client wrapper
+├── state/                 # State management
+│   └── auth_state.dart        # Authentication state
+└── utils/                 # Utilities
+    └── config.dart            # App configuration
 ```
 
-## Notes on backend API
-- Login `POST /auth/login` as x-www-form-urlencoded with `username`, `password`; response `{ access_token }` stored securely.
-- Transliteration `POST /transliterate/` JSON `{ source_text, source_script, target_script }`, and `POST /transliterate/image` multipart with `file` + fields.
-- Notes `GET /notes/`, `POST /notes/add` JSON `{ text, latitude, longitude }` with `Authorization: Bearer <token>`.
+## Dependencies
+
+### Core Dependencies
+- `http` - HTTP client for API communication
+- `provider` - State management
+- `flutter_secure_storage` - Secure token storage
+
+### Feature Dependencies
+- `camera` - Camera access for OCR
+- `image_picker` - Image selection
+- `google_maps_flutter` - Map integration
+- `geolocator` - Location services
+- `flutter_dotenv` - Environment configuration
+
+## Development
+
+### Code Style
+- Uses `flutter_lints` for code analysis
+- Follows Dart/Flutter conventions
+- Material Design 3 components
+
+### Building
+
+```bash
+# Development build
+flutter run --debug
+
+# Release build for web
+flutter build web
+
+# Release build for Android
+flutter build apk
+```
+
+### Testing
+
+```bash
+# Run unit tests
+flutter test
+
+# Run integration tests
+flutter test integration_test/
+```
+
+## Platform Support
+
+| Platform | Status | Notes |
+|----------|--------:|-------|
+| **Web** | ✅ | Primary platform, full functionality |
+| **Android** | ✅ | Full native support |
+| **iOS** | ✅ | Requires macOS for development |
+| **Windows** | ⚠️ | Limited testing |
+| **macOS** | ⚠️ | Limited testing |
+| **Linux** | ⚠️ | Limited testing |
 
 ## Troubleshooting
-- If CORS issues on web, ensure backend `FRONTEND_ORIGIN` allows your web origin.
-- For Android emulator to reach host machine, use `http://10.0.2.2:8000` in `assets/env`.
+
+### Common Issues
+
+**Authentication Errors (401)**
+- Ensure backend is running on correct port
+- Check API base URL in `assets/env`
+- Verify login credentials
+- Clear app data and re-login
+
+**Network Errors**
+- Check internet connectivity
+- Verify backend server is accessible
+- Review CORS configuration on backend
+
+**Camera/Gallery Issues**
+- Grant camera permissions
+- Grant storage permissions
+- Check device compatibility
+
+### Debug Mode
+
+The app includes debug information in the login screen showing:
+- Current API base URL
+- Authentication status
+- Token availability
+
+## Contributing
+
+1. Follow Flutter/Dart style guidelines
+2. Add tests for new features
+3. Update documentation
+4. Test on multiple platforms
+
+## License
+
+MIT License - see the main project LICENSE file.

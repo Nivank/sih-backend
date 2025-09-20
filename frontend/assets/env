@@ -1,4 +1,10 @@
-# 🔧 EDITABLE ENV
+# 🔧 EDITABLE ENV - Flutter App Configuration
+
+# Backend API Configuration
 API_BASE_URL=http://localhost:8000
 USE_NGROK=false
 NGROK_URL=
+
+# 🔧 EDITABLE: For testing with ngrok tunnels
+# Set USE_NGROK=true and provide your ngrok URL below
+# Example: NGROK_URL=https://abc123.ngrok.io
